@@ -1,0 +1,39 @@
+# Deployment definition
+apiVersion: apps/v1  # Specifies the API version for the Deployment object
+kind: Deployment     # Indicates the type of Kubernetes object, which is a Deployment
+metadata:
+  name: fastapi-app  # The name of the Deployment object
+spec:
+  replicas: 1  # Number of pod replicas to run
+  selector:
+    matchLabels:
+      app: fastapi-app  # Selector to identify the pods that this deployment will manage
+  template:
+    metadata:
+      labels:
+        app: fastapi-app  # Labels to apply to the pods created by this deployment
+    spec:
+      containers:
+      - name: fastapi-app  # Name of the container
+        image: you5:latest  # Docker image to use for the container
+        imagePullPolicy: IfNotPresent  # Tells Kubernetes to use the local image if available and not to pull from a registry if it's already present
+        ports:
+        - containerPort: 8000  # The port that the container listens on
+        env:
+        - name: DATABASE_URL  # Environment variable name
+          value: "postgresql://db_6_2_user:AFBekLJMrwVRA2CgaXf5fyyWqeC9XFR6@dpg-crbhsc2j1k6c738bvag0-a.oregon-postgres.render.com/db_6_2"  # The actual database connection string to be used by the application
+
+---
+# Service definition
+apiVersion: v1  # Specifies the API version for the Service object
+kind: Service  # Indicates the type of Kubernetes object, which is a Service
+metadata:
+  name: fastapi-app-service  # The name of the Service object
+spec:
+  type: NodePort  # Type of service that exposes the app on each Node's IP at a static port
+  ports:
+    - port: 8000  # The port that will be exposed by the service
+      targetPort: 8000  # The port on the container to which the traffic will be forwarded
+      nodePort: 30000  # The port on each Node where the service can be accessed externally
+  selector:
+    app: fastapi-app  # Selector to match pods with the label "app: fastapi-app" to route traffic to
